@@ -304,7 +304,7 @@ export default function StudyPlanPage() {
 
       // Send the PDF to our FastAPI backend
       const response = await fetch(
-        "http://127.0.0.1:8000/extract-pdf",
+        "${process.env.NEXT_PUBLIC_API_URL}/extract-pdf",
         {
           method: "POST",
           body: formData,
@@ -408,7 +408,7 @@ export default function StudyPlanPage() {
 
       // Send everything to our tutor endpoint
       const response = await fetch(
-        "http://127.0.0.1:8000/ask-tutor",
+        "${process.env.NEXT_PUBLIC_API_URL}/ask-tutor",
         {
           method: "POST",
           body: formData,
@@ -477,7 +477,7 @@ export default function StudyPlanPage() {
 
       // Send the PDF to our quiz endpoint
       const response = await fetch(
-        "http://127.0.0.1:8000/generate-quiz",
+        "${process.env.NEXT_PUBLIC_API_URL}/generate-quiz",
         {
           method: "POST",
           body: formData,

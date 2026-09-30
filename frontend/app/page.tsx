@@ -165,7 +165,7 @@ export default function Home() {
       }
 
       // Generate the plan with FastAPI + Gemini
-      const response = await fetch("http://127.0.0.1:8000/generate-plan", {
+      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/generate-plan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
