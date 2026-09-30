@@ -44,6 +44,11 @@ The goal of the project is to help learners turn broad learning goals into struc
 7. Gemini generates a personalized study plan.
 8. The study plan is returned to the frontend and displayed using Markdown formatting.
 
+## Live Demo
+
+**[Try Study Buddy Live](https://study-buddy-git-master-emmanuel-08f1.vercel.app)**
+
+
 ## Running the Project Locally
 
 ### Backend
