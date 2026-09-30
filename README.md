@@ -52,3 +52,22 @@ Navigate to the backend directory:
 
 ```bash
 cd backend
+
+Create a virtual environment:
+
+```bash
+python -m venv venv
+```
+
+Activate the virtual environment on Windows:
+
+```bash
+venv\Scripts\activate
+
+add:
+
+```md
+Install the required dependencies:
+
+```bash
+pip install -r requirements.txt
