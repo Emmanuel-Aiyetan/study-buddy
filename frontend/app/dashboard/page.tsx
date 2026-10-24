@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import QuizHistory from "../components/QuizHistory";
+import StudyInsights from "../components/StudyInsights";
+import { analytics, localDay } from "../../lib/planning";
 import { supabase } from "../../lib/supabase";
 
 type StudyPlan = {
@@ -67,6 +70,7 @@ export default function DashboardPage() {
         const { data: studyPlans, error: plansError } = await supabase
           .from("study_plans")
           .select("*")
+          .eq("user_id", user.id)
           .order("created_at", { ascending: false });
 
         if (plansError) {
@@ -174,94 +178,12 @@ export default function DashboardPage() {
   }
 
   function getTodayTasks() {
-    const today = new Date().toISOString().split("T")[0];
+    const today = localDay();
 
     return tasks.filter((task) => task.scheduled_date === today);
   }
-  function getStudyDays() {
-    const completedDates = tasks
-      .filter((task) => task.completed && task.completed_at)
-      .map((task) => task.completed_at!.split("T")[0]);
-
-    return [...new Set(completedDates)].sort().reverse();
-  }
-
-  function getCurrentStreak() {
-    const studyDays = getStudyDays();
-
-    if (studyDays.length === 0) {
-      return 0;
-    }
-
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    const mostRecentStudyDay = new Date(`${studyDays[0]}T00:00:00`);
-
-    const daysSinceMostRecentStudy = Math.floor(
-      (today.getTime() - mostRecentStudyDay.getTime()) /
-        (1000 * 60 * 60 * 24)
-    );
-
-    // If the user hasn't studied today or yesterday,
-    // their current streak has ended.
-    if (daysSinceMostRecentStudy > 1) {
-      return 0;
-    }
-
-    let streak = 0;
-    let expectedDate = new Date(mostRecentStudyDay);
-
-    for (const studyDay of studyDays) {
-      const currentDate = new Date(`${studyDay}T00:00:00`);
-
-      const difference = Math.floor(
-        (expectedDate.getTime() - currentDate.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
-
-      if (difference === 0) {
-        streak++;
-        expectedDate.setDate(expectedDate.getDate() - 1);
-      } else {
-        break;
-      }
-    }
-
-    return streak;
-  }
-
-  function getBestStreak() {
-    const studyDays = getStudyDays();
-
-    if (studyDays.length === 0) {
-      return 0;
-    }
-
-    const sortedDates = [...studyDays].sort();
-
-    let bestStreak = 1;
-    let currentStreak = 1;
-
-    for (let i = 1; i < sortedDates.length; i++) {
-      const previousDate = new Date(`${sortedDates[i - 1]}T00:00:00`);
-      const currentDate = new Date(`${sortedDates[i]}T00:00:00`);
-
-      const difference = Math.floor(
-        (currentDate.getTime() - previousDate.getTime()) /
-          (1000 * 60 * 60 * 24)
-      );
-
-      if (difference === 1) {
-        currentStreak++;
-        bestStreak = Math.max(bestStreak, currentStreak);
-      } else {
-        currentStreak = 1;
-      }
-    }
-
-    return bestStreak;
-  }
+  function getCurrentStreak() { return analytics(tasks).current; }
+  function getBestStreak() { return analytics(tasks).best; }
   if (loading) {
     return (
       <main className="container">
@@ -374,6 +296,8 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
+      <StudyInsights tasks={tasks} />
+      <QuizHistory />
       <section className="streak-card">
         <div className="streak-main">
           <span className="streak-icon">🔥</span>
@@ -414,7 +338,7 @@ export default function DashboardPage() {
       </section>
       <section className="dashboard-section">
         <div className="section-header">
-          <h2>Today's Tasks</h2>
+          <h2>Today&apos;s Tasks</h2>
 
           <span>{getTodayTasks().length} today</span>
         </div>
@@ -422,7 +346,7 @@ export default function DashboardPage() {
         {getTodayTasks().length === 0 ? (
           <div className="empty-card">
             <h3>No tasks for today 🎉</h3>
-            <p>You're all caught up. Enjoy your day or get ahead on your plan.</p>
+            <p>You&apos;re all caught up. Enjoy your day or get ahead on your plan.</p>
           </div>
         ) : (
           <div className="tasks-list">
@@ -478,7 +402,7 @@ export default function DashboardPage() {
 
         {tasks.length === 0 ? (
           <div className="empty-card">
-            <p>You don't have any study tasks yet.</p>
+            <p>You don&apos;t have any study tasks yet.</p>
           </div>
         ) : (
           <div className="tasks-list">

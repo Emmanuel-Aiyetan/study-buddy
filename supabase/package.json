@@ -1,0 +1,1 @@
+{"name":"study-buddy-database-tests","private":true,"type":"module","scripts":{"test":"node test-migrations.mjs"},"devDependencies":{"@electric-sql/pglite":"0.5.11"}}

@@ -1143,3 +1143,25 @@ body {
   font-size: 1.7rem;
 }
 }
+/* Shared learning tools follow the existing card design. */
+.feature-card { background: white; border: 1px solid #e5e7eb; border-radius: 16px; padding: 24px; margin: 24px 0; }
+.feature-card h2 { margin-bottom: 12px; }
+.feature-card p { line-height: 1.6; margin: 12px 0; color: #4b5563; }
+.feature-controls { display: flex; flex-wrap: wrap; gap: 16px; align-items: end; margin: 20px 0; }
+.feature-controls label { display: grid; gap: 8px; }
+.feature-controls input { border: 1px solid #9ca3af; padding: 10px; border-radius: 8px; font: inherit; }
+.feature-card button { background: #4f46e5; color: white; padding: 12px 18px; border: 0; border-radius: 8px; cursor: pointer; margin: 4px; }
+button:disabled { opacity: .6; cursor: not-allowed; }
+button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible { outline: 3px solid #818cf8; outline-offset: 3px; }
+.insight-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.insight-grid strong { display: block; font-size: 2rem; color: #3730a3; }
+.week-chart { list-style: none; display: flex; gap: 12px; flex-wrap: wrap; }
+.week-chart li { display: grid; gap: 8px; flex: 1; min-width: 65px; }
+.week-chart meter { width: 100%; }
+.calendar-day { border-top: 1px solid #e5e7eb; padding: 16px 0; }
+.calendar-day ul { padding-left: 24px; line-height: 1.8; }
+.schedule-preview { list-style: none; max-height: 320px; overflow: auto; margin-bottom: 16px; }
+.schedule-preview li { display: flex; gap: 16px; justify-content: space-between; border-bottom: 1px solid #e5e7eb; padding: 12px 0; }
+.schedule-preview time { white-space: nowrap; }
+@media (max-width: 600px) { .insight-grid { grid-template-columns: repeat(2, 1fr); } .feature-card { padding: 18px; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }

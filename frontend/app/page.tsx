@@ -2,6 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { User } from "@supabase/supabase-js";
+import { apiFetch } from "../lib/api";
+import { localDay } from "../lib/planning";
 import { supabase } from "../lib/supabase";
 
 type Milestone = {
@@ -29,7 +32,7 @@ type StudyPlan = {
 export default function Home() {
   const router = useRouter();
 
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
   const [error, setError] = useState(false);
@@ -85,7 +88,7 @@ export default function Home() {
       setSuccessMessage("");
 
       // Validate goal
-      if (!goal) {
+      if (!goal.trim()) {
         setError(true);
         setErrorMessage("Please enter what you want to learn.");
 
@@ -100,9 +103,9 @@ export default function Home() {
       }
 
       // Validate deadline
-      if (!deadline) {
+      if (!deadline || deadline < localDay()) {
         setError(true);
-        setErrorMessage("Please select your deadline.");
+        setErrorMessage("Please select a deadline of today or later.");
 
         deadlineRef.current?.scrollIntoView({
           behavior: "smooth",
@@ -144,9 +147,9 @@ export default function Home() {
         return;
       }
 
-      if (Number(studyTime) <= 0) {
+      if (!Number.isFinite(Number(studyTime)) || Number(studyTime) < 0.25 || Number(studyTime) > 12) {
         setError(true);
-        setErrorMessage("Study time must be greater than 0 hours.");
+        setErrorMessage("Choose between 0.25 and 12 study hours per day.");
         setLoading(false);
         return;
       }
@@ -165,7 +168,7 @@ export default function Home() {
       }
 
       // Generate the plan with FastAPI + Gemini
-      const response = await fetch("${process.env.NEXT_PUBLIC_API_URL}/generate-plan", {
+      const response = await apiFetch("/generate-plan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -175,6 +178,7 @@ export default function Home() {
           deadline,
           study_time: Number(studyTime),
           knowledge_level: knowledgeLevel,
+          today: localDay(),
         }),
       });
 
@@ -320,13 +324,14 @@ export default function Home() {
         <h2>Create your study plan</h2>
 
         <p>
-          Tell us what you want to learn, and we'll build a personalized plan
+          Tell us what you want to learn, and we&apos;ll build a personalized plan
           for you.
         </p>
 
-        <label>What do you want to learn?</label>
+        <label htmlFor="goal">What do you want to learn?</label>
 
         <input
+          id="goal"
           ref={goalRef}
           type="text"
           value={goal}
@@ -334,30 +339,34 @@ export default function Home() {
           placeholder="For example: Learn Python for backend development"
         />
 
-        <label>When do you want to reach your goal?</label>
+        <label htmlFor="deadline">When do you want to reach your goal?</label>
 
         <input
+          id="deadline"
           ref={deadlineRef}
           type="date"
           value={deadline}
           onChange={(event) => setDeadline(event.target.value)}
         />
 
-        <label>How much time can you study each day?</label>
+        <label htmlFor="studyTime">How much time can you study each day?</label>
 
         <input
+          id="studyTime"
           ref={studyTimeRef}
           type="number"
-          min="0"
+          min="0.25"
+          max="12"
           step="0.5"
           value={studyTime}
           onChange={(event) => setStudyTime(event.target.value)}
           placeholder="How many hours per day?"
         />
 
-        <label>What's your current experience level?</label>
+        <label htmlFor="knowledgeLevel">What&apos;s your current experience level?</label>
 
         <select
+          id="knowledgeLevel"
           ref={knowledgeLevelRef}
           value={knowledgeLevel}
           onChange={(event) => setKnowledgeLevel(event.target.value)}

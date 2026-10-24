@@ -204,16 +204,16 @@ export default function StudySessionPage() {
          </button>
         </div>
         <div className="study-session-instructions">
-          <h2>Today's Focus</h2>
+          <h2>Today&apos;s Focus</h2>
 
           <p>
             Focus on completing this task without distractions. Take your
             time, understand the material, and make notes of anything you
-            don't understand.
+            don&apos;t understand.
           </p>
 
           <p>
-            When you're finished, mark the task as complete so Study Buddy
+            When you&apos;re finished, mark the task as complete so Study Buddy
             can update your progress.
           </p>
         </div>

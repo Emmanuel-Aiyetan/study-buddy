@@ -7,15 +7,18 @@ from google import genai
 
 load_dotenv()
 
-client = genai.Client(
-    api_key=os.getenv("GEMINI_API_KEY")
-)
+def get_client():
+    key = os.getenv("GEMINI_API_KEY")
+    if not key:
+        raise RuntimeError("AI service is not configured")
+    return genai.Client(api_key=key, http_options={"timeout": 60000})
 
 
-def create_study_plan(goal, deadline, study_time, knowledge_level):
+def create_study_plan(goal, deadline, study_time, knowledge_level, today):
     prompt = f"""
 Create a personalized study plan for a student.
 
+Today: {today}
 Learning goal: {goal}
 Deadline: {deadline}
 Available study time per day: {study_time} hours
@@ -61,8 +64,8 @@ Requirements:
 - Include enough tasks to reasonably reach the goal by the deadline.
 """
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
+    response = get_client().models.generate_content(
+        model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
         contents=prompt,
     )
 
@@ -109,8 +112,8 @@ Study material:
 {text[:50000]}
 """
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
+    response = get_client().models.generate_content(
+        model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
         contents=prompt,
     )
 
@@ -151,8 +154,8 @@ LATEST STUDENT QUESTION:
 {question}
 """
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
+    response = get_client().models.generate_content(
+        model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
         contents=prompt,
     )
 
@@ -204,8 +207,8 @@ STUDY MATERIAL:
 {material_text[:50000]}
 """
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
+    response = get_client().models.generate_content(
+        model=os.getenv("GEMINI_MODEL", "gemini-3.6-flash"),
         contents=prompt,
     )
 

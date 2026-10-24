@@ -2,6 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import QuizHistory from "../../components/QuizHistory";
+import AdaptivePlan from "../../components/AdaptivePlan";
+import { apiFetch } from "../../../lib/api";
 import { supabase } from "../../../lib/supabase";
 
 type StudyPlan = {
@@ -100,6 +103,7 @@ export default function StudyPlanPage() {
   const [submittedQuizzes, setSubmittedQuizzes] = useState<
     Record<string, boolean>
   >({});
+  const [quizRevision, setQuizRevision] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -232,6 +236,8 @@ export default function StudyPlanPage() {
         return;
       }
 
+      if (file.size > 10 * 1024 * 1024) { setUploadMessage("Choose a PDF smaller than 10 MB."); return; }
+
       const filePath = `${user.id}/${planId}/${Date.now()}-${file.name}`;
 
       const { error: uploadError } = await supabase.storage
@@ -244,7 +250,7 @@ export default function StudyPlanPage() {
         return;
       }
 
-      const { error: databaseError } = await supabase
+      const { data: savedMaterial, error: databaseError } = await supabase
         .from("study_materials")
         .insert({
           user_id: user.id,
@@ -253,7 +259,7 @@ export default function StudyPlanPage() {
           file_path: filePath,
           file_type: file.type,
           file_size: file.size,
-        });
+        }).select().single();
 
       if (databaseError) {
         console.error("Material database error:", databaseError);
@@ -268,6 +274,7 @@ export default function StudyPlanPage() {
         return;
       }
 
+      if (savedMaterial) setMaterials(current => [savedMaterial, ...current]);
       setUploadMessage("Material uploaded successfully!");
     } catch (error) {
       console.error("Upload error:", error);
@@ -303,8 +310,8 @@ export default function StudyPlanPage() {
       );
 
       // Send the PDF to our FastAPI backend
-      const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/extract-pdf",
+      const response = await apiFetch(
+        "/extract-pdf",
         {
           method: "POST",
           body: formData,
@@ -407,8 +414,8 @@ export default function StudyPlanPage() {
       );
 
       // Send everything to our tutor endpoint
-      const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/ask-tutor",
+      const response = await apiFetch(
+        "/ask-tutor",
         {
           method: "POST",
           body: formData,
@@ -476,8 +483,8 @@ export default function StudyPlanPage() {
       );
 
       // Send the PDF to our quiz endpoint
-      const response = await fetch(
-        "${process.env.NEXT_PUBLIC_API_URL}/generate-quiz",
+      const response = await apiFetch(
+        "/generate-quiz",
         {
           method: "POST",
           body: formData,
@@ -511,11 +518,13 @@ export default function StudyPlanPage() {
       }));
     } catch (error) {
       console.error("Quiz generation error:", error);
+      setUploadMessage("Unable to generate a quiz. Please try again.");
     } finally {
       setQuizLoadingMaterialId(null);
     }
   }
-  function submitQuiz(materialId: string) {
+  async function submitQuiz(materialId: string) {
+    if (submittedQuizzes[materialId]) return;
     const quiz = materialQuizzes[materialId];
 
     if (!quiz) {
@@ -530,10 +539,16 @@ export default function StudyPlanPage() {
       return;
     }
 
-    setSubmittedQuizzes((currentSubmitted) => ({
-      ...currentSubmitted,
-      [materialId]: true,
-    }));
+    setSubmittedQuizzes((currentSubmitted) => ({ ...currentSubmitted, [materialId]: true }));
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) { setUploadMessage("Quiz graded. Log in again to save your result."); return; }
+    const { error: saveError } = await supabase.from("quiz_attempts").insert({
+      user_id: user.id, study_plan_id: planId, material_id: materialId,
+      score: getQuizScore(materialId), total: quiz.questions.length,
+      review_questions: quiz.questions.filter((q, i) => answers[i] !== q.correct_answer).map(q => q.question),
+    });
+    if (!saveError) setQuizRevision(n => n + 1);
+    setUploadMessage(saveError ? "Quiz graded, but the result could not be saved. Check the database migration and try again with a new quiz." : "Quiz result saved. Review the explanations for questions you missed.");
   }
 
   function getQuizScore(materialId: string) {
@@ -581,7 +596,7 @@ export default function StudyPlanPage() {
     );
   }
 
-  if (error || !plan) {
+  if (!plan) {
     return (
       <main className="container">
         <button
@@ -640,6 +655,16 @@ export default function StudyPlanPage() {
         </div>
       </section>
 
+      {error && <p role="alert" className="error-card">{error}</p>}
+      <QuizHistory planId={planId} revision={quizRevision} />
+      <AdaptivePlan plan={plan} tasks={tasks} onApplied={async () => {
+        const [{ data: refreshedPlan, error: planError }, { data: refreshedTasks, error: tasksError }] = await Promise.all([
+          supabase.from("study_plans").select("*").eq("id", planId).single(),
+          supabase.from("study_tasks").select("*").eq("study_plan_id", planId).order("scheduled_date"),
+        ]);
+        if (planError || tasksError) throw new Error("Schedule saved. Refresh the page to see the updated tasks.");
+        setPlan(refreshedPlan); setTasks(refreshedTasks || []);
+      }} />
       <section className="overall-progress-card">
         <div className="progress-info">
           <span>Plan Progress</span>
@@ -667,9 +692,10 @@ export default function StudyPlanPage() {
         <div className="material-upload-card">
           <p>
             Upload your study materials so Study Buddy can use them to
-            understand what you're learning.
+            understand what you&apos;re learning.
           </p>
 
+          <p>PDFs stay in private storage. AI tools send up to 50,000 characters of extracted text to the AI provider. Maximum file size: 10 MB.</p>
           <label className="upload-label" htmlFor="material-upload">
             {uploading ? "Uploading..." : "Choose PDF"}
           </label>
@@ -727,7 +753,7 @@ export default function StudyPlanPage() {
                       return;
                     }
 
-                    window.open(data.signedUrl, "_blank");
+                    window.open(data.signedUrl, "_blank", "noopener,noreferrer");
                   }}
                 >
                   Open PDF →
@@ -998,7 +1024,7 @@ export default function StudyPlanPage() {
           <div className="empty-card">
             <h3>No tasks yet</h3>
             <p>
-              This study plan doesn't have any tasks yet.
+              This study plan doesn&apos;t have any tasks yet.
             </p>
           </div>
         ) : (
