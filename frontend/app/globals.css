@@ -1,3 +1,6 @@
+/* Shared defaults keep controls readable across every study page. */
+button, input, select, textarea { font: inherit; }
+button { border: 1px solid transparent; border-radius: 10px; padding: 11px 18px; background: #4f46e5; color: #fff; font-weight: 600; cursor: pointer; line-height: 1.4; }
 * {
   box-sizing: border-box;
   margin: 0;
@@ -1176,4 +1179,39 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
   .task-meta { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; white-space: normal; }
   .feature-controls label { min-width: 0; max-width: 100%; }
   .feature-controls input { min-width: 0; max-width: 100%; }
+}
+
+/* Shared navigation and restrained page polish. */
+.app-header { background: #fff; border-bottom: 1px solid #e4e7ef; }
+.app-navigation { max-width: 1120px; margin: auto; padding: 20px 24px; display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.app-brand { color: #312e81; font-size: 1.25rem; font-weight: 750; text-decoration: none; flex-shrink: 0; }
+.app-brand span { display: block; margin-top: 5px; color: #64748b; font-size: .75rem; font-weight: 400; }
+.app-navigation-links { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.app-navigation-links a, .navigation-account { padding: 10px 14px; border-radius: 9px; color: #475569; font-size: .9rem; font-weight: 600; text-decoration: none; border: 1px solid transparent; background: transparent; min-height: 42px; }
+.app-navigation-links a:hover, .navigation-account:hover { background: #f1f5f9; }
+.app-navigation-links a[aria-current="page"] { background: #eef2ff; color: #4338ca; }
+.navigation-error { max-width: 1072px; margin: 0 auto; padding: 0 24px 12px; color: #b91c1c; }
+.button-link { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 11px 18px; border-radius: 10px; background: #4f46e5; color: #fff; font-weight: 600; text-decoration: none; }
+.button-link:hover { background: #4338ca; }
+.dashboard-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-bottom: 32px; }
+.section-link { padding: 10px 12px; color: #4338ca; font-weight: 600; text-underline-offset: 4px; }
+.container { padding-top: 40px; padding-bottom: 64px; }
+.hero { margin-bottom: 28px; }
+.hero h1 { font-size: clamp(2rem, 5vw, 3rem); letter-spacing: -.035em; overflow-wrap: anywhere; }
+.form-card, .results-card, .plan-card, .feature-card, .auth-card { border: 1px solid #e4e7ef; box-shadow: 0 3px 12px rgb(15 23 42 / 4%); }
+.task-card { box-shadow: none; }
+.task-checkbox { padding: 0; flex-shrink: 0; }
+input, select, textarea { max-width: 100%; }
+section[id] { scroll-margin-top: 24px; }
+@media (max-width: 600px) {
+  .app-navigation { padding: 16px; flex-direction: column; align-items: flex-start; gap: 14px; }
+  .app-navigation-links { width: 100%; gap: 3px; }
+  .app-navigation-links a, .navigation-account { padding: 10px 11px; }
+  .container { padding: 28px 16px 48px; }
+  .plans-grid { grid-template-columns: minmax(0, 1fr); }
+  .form-card, .results-card, .feature-card { padding: 22px 18px; }
+  .dashboard-actions .button-link { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
 }

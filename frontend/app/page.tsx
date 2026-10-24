@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
-import type { User } from "@supabase/supabase-js";
 import { apiFetch } from "../lib/api";
 import { localDay } from "../lib/planning";
 import { supabase } from "../lib/supabase";
@@ -32,8 +31,6 @@ type StudyPlan = {
 export default function Home() {
   const router = useRouter();
 
-  const [user, setUser] = useState<User | null>(null);
-  const [authLoading, setAuthLoading] = useState(true);
   const [studyPlan, setStudyPlan] = useState<StudyPlan | null>(null);
   const [error, setError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -50,35 +47,6 @@ export default function Home() {
   const studyTimeRef = useRef<HTMLInputElement>(null);
   const knowledgeLevelRef = useRef<HTMLSelectElement>(null);
 
-  useEffect(() => {
-    async function checkUser() {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      setUser(user);
-      setAuthLoading(false);
-    }
-
-    checkUser();
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setUser(session?.user ?? null);
-      setAuthLoading(false);
-    });
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, []);
-  async function handleLogout() {
-    await supabase.auth.signOut();
-
-    setUser(null);
-    router.push("/login");
-  }
   async function generateStudyPlan() {
     try {
       setLoading(true);
@@ -273,43 +241,7 @@ export default function Home() {
 
   return (
     <main className="container">
-      <nav className="home-nav">
-        <button
-          className="home-nav-brand"
-          onClick={() => router.push("/")}
-        >
-          Study Buddy
-        </button>
 
-        {!authLoading && (
-          <div className="home-nav-actions">
-            {user ? (
-              <>
-                <button
-                  className="nav-dashboard-button"
-                  onClick={() => router.push("/dashboard")}
-                >
-                  Dashboard
-                </button>
-
-                <button
-                  className="nav-logout-button"
-                  onClick={handleLogout}
-                >
-                  Log Out
-                </button>
-              </>
-            ) : (
-              <button
-                className="nav-login-button"
-                onClick={() => router.push("/login")}
-              >
-                Log In
-              </button>
-            )}
-          </div>
-        )}
-      </nav>
       <section className="hero">
         <p className="eyebrow">AI-POWERED LEARNING</p>
 

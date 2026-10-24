@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import AppNavigation from "./components/AppNavigation";
 
 export const metadata: Metadata = {
   title: "AI Study Buddy",
@@ -12,7 +13,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       lang="en"
       className="h-full antialiased"
     >
-      <body className="min-h-full flex flex-col">{children}</body>
+      <body className="min-h-full flex flex-col"><AppNavigation />{children}</body>
     </html>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import QuizHistory from "../components/QuizHistory";
 import StudyInsights from "../components/StudyInsights";
@@ -110,11 +111,6 @@ export default function DashboardPage() {
     loadDashboard();
   }, [router]);
 
-  async function handleLogout() {
-    await supabase.auth.signOut();
-    router.push("/login");
-  }
-
   function getPlanTasks(planId: string) {
     return tasks.filter((task) => task.study_plan_id === planId);
   }
@@ -208,15 +204,11 @@ export default function DashboardPage() {
         </p>
       </section>
 
-      <section className="dashboard-actions">
-        <button onClick={() => router.push("/")}>
-          + Create New Study Plan
-        </button>
-
-        <button className="logout-button" onClick={handleLogout}>
-          Log Out
-        </button>
-      </section>
+      <nav className="dashboard-actions" aria-label="Dashboard shortcuts">
+        <Link className="button-link" href="/">+ Create study plan</Link>
+        <a className="section-link" href="#study-plans">Your plans</a>
+        <a className="section-link" href="#study-tasks">Your tasks</a>
+      </nav>
 
       {error && (
         <div className="error-card">
@@ -224,7 +216,7 @@ export default function DashboardPage() {
         </div>
       )}
 
-      <section className="dashboard-section">
+      <section id="study-plans" className="dashboard-section">
         <div className="section-header">
           <h2>Your Study Plans</h2>
 
@@ -393,7 +385,7 @@ export default function DashboardPage() {
           </div>
         )}
       </section>
-      <section className="dashboard-section">
+      <section id="study-tasks" className="dashboard-section">
         <div className="section-header">
           <h2>Your Tasks</h2>
 
