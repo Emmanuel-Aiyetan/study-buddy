@@ -1,6 +1,6 @@
 # AI Study Buddy
 
-[Try the live app](https://study-buddy-git-master-emmanuel-08f1.vercel.app)
+[Try the live app](https://study-buddy-alpha-olive.vercel.app)
 
 Turn a learning goal into a practical daily plan, study uploaded PDFs with an AI tutor, and track your progress.
 
