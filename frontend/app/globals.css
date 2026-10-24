@@ -1165,3 +1165,15 @@ button:focus-visible, input:focus-visible, select:focus-visible, a:focus-visible
 .schedule-preview time { white-space: nowrap; }
 @media (max-width: 600px) { .insight-grid { grid-template-columns: repeat(2, 1fr); } .feature-card { padding: 18px; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { scroll-behavior: auto !important; animation: none !important; transition: none !important; } }
+
+/* Keep task details inside narrow cards without hiding content. */
+.task-content { min-width: 0; flex: 1; }
+.task-content > div { min-width: 0; }
+.task-card h3, .task-card p { overflow-wrap: anywhere; }
+.schedule-preview li > span { min-width: 0; overflow-wrap: anywhere; }
+@media (max-width: 600px) {
+  .task-card { flex-direction: column; align-items: stretch; gap: 12px; }
+  .task-meta { flex-direction: row; flex-wrap: wrap; align-items: flex-start; gap: 8px 12px; white-space: normal; }
+  .feature-controls label { min-width: 0; max-width: 100%; }
+  .feature-controls input { min-width: 0; max-width: 100%; }
+}
